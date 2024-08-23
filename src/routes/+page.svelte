@@ -1,15 +1,37 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 
 	let videoElement: HTMLVideoElement;
 	let canvasElement: HTMLCanvasElement;
 	let stream: MediaStream | null = null;
-	let claudeResponse: string =
-		'In darkness he sleeps \n A peaceful innocent face  Dreaming blissfully';
+	let claudeResponse: string = 'take a picture to generate a poem';
+
+	let visibleChars = 0;
+	let intervalId: NodeJS.Timeout;
+
+	function animateText() {
+		clearInterval(intervalId);
+		visibleChars = 0;
+		intervalId = setInterval(() => {
+			visibleChars += 1;
+			if (visibleChars >= claudeResponse.length) {
+				clearInterval(intervalId);
+			}
+		}, 50); // Adjust speed as needed
+	}
+
+	$: if (claudeResponse) {
+		animateText();
+	}
 
 	onMount(async () => {
 		try {
-			stream = await navigator.mediaDevices.getUserMedia({ video: true });
+			stream = await navigator.mediaDevices.getUserMedia({
+				video: {
+					facingMode: 'environment'
+				}
+			});
 			if (videoElement) {
 				videoElement.srcObject = stream;
 				startVideoProcessing();
@@ -28,7 +50,11 @@
 
 	async function startCamera() {
 		try {
-			stream = await navigator.mediaDevices.getUserMedia({ video: true });
+			stream = await navigator.mediaDevices.getUserMedia({
+				video: {
+					facingMode: 'environment'
+				}
+			});
 			if (videoElement) {
 				videoElement.srcObject = stream;
 				startVideoProcessing();
@@ -85,13 +111,16 @@
 
 	onMount(() => {
 		return () => {
+			clearInterval(intervalId);
 			stopCamera();
 		};
 	});
 </script>
 
-<div class="flex h-full flex-col gap-3">
-	<div class="p-4 border border-white/30 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+<div class="flex h-full flex-col gap-0">
+	<!-- <div
+		class="p-4 border border-white/30 rounded-[30px] bg-white/5 hover:bg-white/10 transition-colors"
+	>
 		<h1 class="text-xl font-semibold text-white">Poetic Camera</h1>
 
 		<button
@@ -106,10 +135,10 @@
 		>
 			{stream ? 'Stop' : 'Start'}
 		</button>
-	</div>
+	</div> -->
 
 	<div
-		class="flex-1 border border-white/30 rounded-lg bg-white/5 hover:bg-white/10 transition-colors overflow-hidden"
+		class="flex-1 rounded-[30px] border border-white/30 rounded-lg bg-white/5 hover:bg-white/10 transition-colors overflow-hidden"
 	>
 		<div class="relative flex flex-col items-center h-full">
 			<video bind:this={videoElement} autoplay playsinline class="hidden">
@@ -122,16 +151,40 @@
 			>
 				<p class="text-white text-center text-[5vw]">
 					{#each claudeResponse.split('\\n') as line}
-						{line}<br />
+						{#each line.split('') as char, index}
+							{#if index < visibleChars}
+								<span
+									in:fade={{ duration: 300, delay: index * 20 }}
+									class="inline-block"
+									style="animation: dither {Math.random() * 0.5 + 0.5}s ease-out;"
+								>
+									{char === ' ' ? '\u00A0' : char}
+								</span>
+							{/if}
+						{/each}
+						<br />
 					{/each}
 				</p>
 			</div>
 
 			<button
 				on:click={callClaudeAPI}
-				class="absolute h-12 w-12 bottom-8 left-1/2 transform -translate-x-1/2 bg-white/30 backdrop-blur-md border-2 border-white text-black rounded-full hover:bg-white transition-colors"
+				class="absolute h-16 w-16 bottom-8 left-1/2 transform -translate-x-1/2 bg-white/30 backdrop-blur-md border-4 border-white/40 text-black rounded-full hover:bg-white transition-colors"
 			>
 			</button>
 		</div>
 	</div>
 </div>
+
+<style>
+	@keyframes dither {
+		0% {
+			opacity: 0;
+			filter: blur(200px);
+		}
+		100% {
+			opacity: 1;
+			filter: blur(0);
+		}
+	}
+</style>
