@@ -118,27 +118,8 @@
 </script>
 
 <div class="flex h-full flex-col gap-0">
-	<!-- <div
-		class="p-4 border border-white/30 rounded-[30px] bg-white/5 hover:bg-white/10 transition-colors"
-	>
-		<h1 class="text-xl font-semibold text-white">Poetic Camera</h1>
-
-		<button
-			on:click={() => {
-				if (stream) {
-					stopCamera();
-				} else {
-					startCamera();
-				}
-			}}
-			class="absolute bottom-2 right-2 px-4 py-1 bg-white/30 backdrop-blur-md border-2 border-white text-black rounded-full hover:bg-white transition-colors"
-		>
-			{stream ? 'Stop' : 'Start'}
-		</button>
-	</div> -->
-
 	<div
-		class="flex-1 rounded-[30px] border border-white/30 rounded-lg bg-white/5 hover:bg-white/10 transition-colors overflow-hidden"
+		class="flex-1 rounded-[30px] border border-white/30 bg-white/5 hover:bg-white/10 transition-colors overflow-hidden"
 	>
 		<div class="relative flex flex-col items-center h-full">
 			<video bind:this={videoElement} autoplay playsinline class="hidden">
@@ -147,7 +128,7 @@
 			</video>
 			<canvas bind:this={canvasElement} class="w-full h-full object-cover"></canvas>
 			<div
-				class="absolute inset-0 flex items-center justify-center bg-white/60 bg-blend-multiply backdrop-blur-md pointer-events-none"
+				class="absolute inset-0 flex items-center justify-center bg-white/60 bg-blend-multiply backdrop-blur-xl"
 			>
 				<p class="text-white text-center text-[5vw]">
 					{#each claudeResponse.split('\\n') as line}
@@ -165,6 +146,25 @@
 						<br />
 					{/each}
 				</p>
+			</div>
+
+			<div
+				class="p-4 flex absolute top-0 left-0 right-0 justify-between items-center border-b border-white/30 bg-white/10 hover:bg-white/10 transition-colors"
+			>
+				<h1 class="text-xl font-semibold text-white">Poetic Camera</h1>
+
+				<button
+					on:click={() => {
+						if (stream) {
+							stopCamera();
+						} else {
+							startCamera();
+						}
+					}}
+					class="px-4 py-1 bg-white/10 backdrop-blur-md border-2 border-white text-white rounded-full hover:bg-white transition-colors"
+				>
+					{stream ? 'Stop' : 'Start'}
+				</button>
 			</div>
 
 			<button
